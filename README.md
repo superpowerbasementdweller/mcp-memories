@@ -37,7 +37,7 @@ Add to your MCP client configuration:
 {
   "mcpServers": {
     "mcp-memories": {
-      "command": "C:\\Users\\rocket\\.mcp-memory\\mcp-memories.exe"
+      "command": "C:\\Users\\yourName\\.mcp-memory\\mcp-memories.exe"
     }
   }
 }
