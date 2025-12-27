@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Memories Dashboard</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a24;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --text-primary: #f0f0f5;
+            --text-secondary: #8888a0;
+            --border: #2a2a3a;
+            --success: #22c55e;
+            --warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--accent), #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, var(--accent), #7c3aed);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+
+        .restart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--accent-glow);
+        }
+
+        .restart-btn:active {
+            transform: translateY(0);
+        }
+
+        .restart-btn.loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            transition: all 0.2s;
+        }
+
+        .stat-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Categories */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .category-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .category-header {
+            background: var(--bg-secondary);
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .category-icon {
+            font-size: 1.25rem;
+        }
+
+        .category-name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .category-count {
+            margin-left: auto;
+            background: var(--accent);
+            color: white;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .tools-list {
+            padding: 0.5rem;
+        }
+
+        .tool-item {
+            padding: 0.875rem 1rem;
+            border-radius: 8px;
+            transition: background 0.15s;
+            cursor: pointer;
+        }
+
+        .tool-item:hover {
+            background: var(--bg-secondary);
+            border-left: 3px solid var(--accent);
+            margin-left: -3px;
+        }
+
+        .tool-name {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.875rem;
+            color: var(--accent);
+            margin-bottom: 0.25rem;
+        }
+
+        .tool-desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            transition: transform 0.2s;
+        }
+
+        .modal-overlay.show .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+            font-size: 1.1rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.25rem;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 1.25rem;
+        }
+
+        .modal-section {
+            margin-bottom: 1.25rem;
+        }
+
+        .modal-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .modal-label {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-code {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            color: var(--text-primary);
+        }
+
+        .copy-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-top: 0.75rem;
+        }
+
+        .copy-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--success);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.error {
+            border-color: #ef4444;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .loading-pulse {
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <span class="logo-icon">🧠</span>
+                <div>
+                    <h1>MCP Memories</h1>
+                    <p class="subtitle">Database-backed context for AI coding sessions</p>
+                </div>
+            </div>
+            <button class="restart-btn" onclick="restartServer()">
+                <span id="restart-icon">🔄</span>
+                <span id="restart-text">Restart MCP Server</span>
+            </button>
+        </header>
+
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{.Stats.Projects}}</div>
+                <div class="stat-label">Projects</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{.Stats.Memories}}</div>
+                <div class="stat-label">Memories</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{.Stats.Tasks}}</div>
+                <div class="stat-label">Tasks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{.Stats.Guidelines}}</div>
+                <div class="stat-label">Guidelines</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{.Stats.Bookmarks}}</div>
+                <div class="stat-label">Bookmarks</div>
+            </div>
+        </section>
+
+        <section class="categories-grid">
+            {{range $category, $tools := .Categories}}
+            <div class="category-card">
+                <div class="category-header">
+                    <span class="category-icon">
+                        {{if eq $category "Memory"}}💭{{end}}
+                        {{if eq $category "Task"}}✅{{end}}
+                        {{if eq $category "Metadata"}}⚙️{{end}}
+                        {{if eq $category "Filetree"}}📁{{end}}
+                        {{if eq $category "Guideline"}}📖{{end}}
+                        {{if eq $category "Project"}}📦{{end}}
+                        {{if eq $category "Bookmark"}}🔖{{end}}
+                    </span>
+                    <span class="category-name">{{$category}}</span>
+                    <span class="category-count">{{len $tools}}</span>
+                </div>
+                <div class="tools-list">
+                    {{range $tools}}
+                    <div class="tool-item"
+                        onclick='showToolDetails({{.Name | printf "%q"}}, {{.Description | printf "%q"}})'>
+                        <div class="tool-name">{{.Name}}</div>
+                        <div class="tool-desc">{{.Description}}</div>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+            {{end}}
+        </section>
+
+        <section class="data-browser">
+            <h2 class="section-title">📊 Data Browser</h2>
+            <div class="tabs-row">
+                <div class="tabs">
+                    <button class="tab active" onclick="loadData('memories')">💭 Memories</button>
+                    <button class="tab" onclick="loadData('tasks')">✅ Tasks</button>
+                    <button class="tab" onclick="loadData('guidelines')">📖 Guidelines</button>
+                    <button class="tab" onclick="loadData('bookmarks')">🔖 Bookmarks</button>
+                    <button class="tab" onclick="loadData('projects')">📦 Projects</button>
+                </div>
+                <button class="create-btn" id="create-btn" onclick="showCreateForm()">+ New</button>
+            </div>
+            <div class="data-container" id="data-container">
+                <p class="data-hint">Click a tab to load data</p>
+            </div>
+        </section>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span class="modal-title" id="modal-title"></span>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <div class="modal-label">Description</div>
+                    <p id="modal-desc" style="color: var(--text-primary); margin: 0;"></p>
+                </div>
+                <div class="modal-section">
+                    <div class="modal-label">Example Usage</div>
+                    <pre class="modal-code" id="modal-example"></pre>
+                    <button class="copy-btn" onclick="copyExample()">📋 Copy Example</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="create-modal" onclick="closeCreateModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span class="modal-title" id="create-modal-title">Create New</span>
+                <button class="modal-close" onclick="closeCreateModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="create-form-body">
+                <!-- Form fields populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .section-title {
+            margin: 3rem 0 1.5rem;
+            font-size: 1.25rem;
+            color: var(--text-primary);
+        }
+
+        .tabs-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .create-btn {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .create-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-family: inherit;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, var(--accent), #7c3aed);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+
+        .submit-btn:hover {
+            opacity: 0.9;
+        }
+
+        .delete-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            margin-left: 0.5rem;
+        }
+
+        .delete-btn:hover {
+            background: #dc2626;
+        }
+
+        .data-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .tab {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .data-browser {
+            margin-top: 2rem;
+        }
+
+        .data-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            min-height: 200px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .data-hint {
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .data-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .data-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .data-title {
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .data-content {
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .data-meta {
+            margin-top: 0.75rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .data-tag {
+            background: var(--accent);
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .data-field {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+
+        .data-field strong {
+            color: var(--text-primary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+    </style>
+
+    <script>
+        async function restartServer() {
+            const btn = document.querySelector('.restart-btn');
+            const icon = document.getElementById('restart-icon');
+            const text = document.getElementById('restart-text');
+
+            btn.classList.add('loading');
+            icon.textContent = '⏳';
+            text.textContent = 'Restarting...';
+
+            try {
+                const response = await fetch('/api/restart', { method: 'POST' });
+                const data = await response.json();
+
+                showToast(data.message, data.success ? 'success' : 'error');
+            } catch (err) {
+                showToast('Failed to restart server', 'error');
+            } finally {
+                btn.classList.remove('loading');
+                icon.textContent = '🔄';
+                text.textContent = 'Restart MCP Server';
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast ' + type + ' show';
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        let currentDataType = 'memories';
+
+        async function loadData(type) {
+            currentDataType = type;
+
+            // Update active tab
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const container = document.getElementById('data-container');
+            container.innerHTML = '<p class="data-hint">Loading...</p>';
+
+            try {
+                const response = await fetch(`/api/${type}`);
+                const data = await response.json();
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<p class="empty-state">No data yet. Click "+ New" to add one!</p>';
+                    return;
+                }
+
+                container.innerHTML = data.map(item => renderItem(type, item)).join('');
+            } catch (err) {
+                container.innerHTML = '<p class="empty-state">Failed to load data</p>';
+            }
+        }
+
+        function renderItem(type, item) {
+            const deleteBtn = type !== 'projects' ? `<button class="delete-btn" onclick="deleteItem('${type}', ${item.id})">🗑️ Delete</button>` : '';
+
+            switch (type) {
+                case 'memories':
+                    return `
+                        <div class="data-item">
+                            <div class="data-item-header">
+                                <div class="data-content">${escapeHtml(item.content)}</div>
+                                ${deleteBtn}
+                            </div>
+                            <div class="data-meta">
+                                ${(item.keywords || []).map(k => `<span class="data-tag">${escapeHtml(k)}</span>`).join('')}
+                                <span class="data-field">ID: ${item.id}</span>
+                            </div>
+                        </div>`;
+
+                case 'tasks':
+                    return `
+                        <div class="data-item">
+                            <div class="data-item-header">
+                                <div class="data-title">${escapeHtml(item.title)}</div>
+                                ${deleteBtn}
+                            </div>
+                            ${item.description ? `<div class="data-content">${escapeHtml(item.description)}</div>` : ''}
+                            <div class="data-meta">
+                                <span class="data-tag">${item.status}</span>
+                                <span class="data-field">Priority: ${item.priority}</span>
+                                <span class="data-field">ID: ${item.id}</span>
+                            </div>
+                        </div>`;
+
+                case 'guidelines':
+                    return `
+                        <div class="data-item">
+                            <div class="data-item-header">
+                                <div class="data-title">[${escapeHtml(item.category)}] ${escapeHtml(item.title)}</div>
+                                ${deleteBtn}
+                            </div>
+                            <div class="data-content">${escapeHtml(item.content.substring(0, 300))}${item.content.length > 300 ? '...' : ''}</div>
+                            <div class="data-meta">
+                                ${(item.tags || []).map(t => `<span class="data-tag">${escapeHtml(t)}</span>`).join('')}
+                                <span class="data-field">Priority: ${item.priority}</span>
+                            </div>
+                        </div>`;
+
+                case 'bookmarks':
+                    return `
+                        <div class="data-item">
+                            <div class="data-item-header">
+                                <div class="data-title">${escapeHtml(item.title)}</div>
+                                ${deleteBtn}
+                            </div>
+                            <div class="data-field"><strong>URL:</strong> ${escapeHtml(item.url)}</div>
+                            ${item.excerpt ? `<div class="data-content" style="margin-top:0.5rem">${escapeHtml(item.excerpt)}</div>` : ''}
+                            ${item.note ? `<div class="data-field" style="margin-top:0.5rem"><strong>Note:</strong> ${escapeHtml(item.note)}</div>` : ''}
+                            <div class="data-meta">
+                                ${item.doc_type ? `<span class="data-tag">${item.doc_type}</span>` : ''}
+                                ${(item.tags || []).map(t => `<span class="data-tag">${escapeHtml(t)}</span>`).join('')}
+                            </div>
+                        </div>`;
+
+                case 'projects':
+                    return `
+                        <div class="data-item">
+                            <div class="data-title">${escapeHtml(item.name || item.slug)}</div>
+                            <div class="data-meta">
+                                <span class="data-field"><strong>Slug:</strong> ${escapeHtml(item.slug)}</span>
+                                ${item.root_path ? `<span class="data-field"><strong>Path:</strong> ${escapeHtml(item.root_path)}</span>` : ''}
+                            </div>
+                        </div>`;
+
+                default:
+                    return `<div class="data-item"><pre>${JSON.stringify(item, null, 2)}</pre></div>`;
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Auto-load memories on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData('memories');
+        });
+
+        // Tool details modal
+        let currentExample = '';
+
+        function showToolDetails(name, description) {
+            document.getElementById('modal-title').textContent = name;
+            document.getElementById('modal-desc').textContent = description;
+
+            currentExample = getToolExample(name);
+            document.getElementById('modal-example').textContent = currentExample;
+
+            document.getElementById('modal-overlay').classList.add('show');
+        }
+
+        function closeModal(event) {
+            if (!event || event.target === document.getElementById('modal-overlay')) {
+                document.getElementById('modal-overlay').classList.remove('show');
+            }
+        }
+
+        function copyExample() {
+            navigator.clipboard.writeText(currentExample).then(() => {
+                showToast('Example copied to clipboard!', 'success');
+            });
+        }
+
+        function getToolExample(name) {
+            const examples = {
+                // Memory
+                memory_store: `{
+  "name": "memory_store",
+  "arguments": {
+    "content": "Important context to remember",
+    "keywords": ["tag1", "tag2"],
+    "project": "my-project"
+  }
+}`,
+                memory_search: `{
+  "name": "memory_search",
+  "arguments": {
+    "query": "search text",
+    "keywords": ["tag1"],
+    "limit": 10
+  }
+}`,
+                memory_delete: `{
+  "name": "memory_delete",
+  "arguments": { "id": 1 }
+}`,
+
+                // Task
+                task_create: `{
+  "name": "task_create",
+  "arguments": {
+    "title": "Task title",
+    "description": "Detailed description",
+    "priority": 10,
+    "project": "my-project"
+  }
+}`,
+                task_update: `{
+  "name": "task_update",
+  "arguments": {
+    "id": 1,
+    "status": "in_progress"
+  }
+}`,
+                task_list: `{
+  "name": "task_list",
+  "arguments": {
+    "project": "my-project",
+    "status": "todo"
+  }
+}`,
+                task_delete: `{
+  "name": "task_delete",
+  "arguments": { "id": 1 }
+}`,
+
+                // Guideline
+                guideline_create: `{
+  "name": "guideline_create",
+  "arguments": {
+    "category": "coding_style",
+    "title": "Naming conventions",
+    "content": "## Guidelines\\n\\n1. Use snake_case",
+    "tags": ["style"],
+    "priority": 10
+  }
+}`,
+                guideline_list: `{
+  "name": "guideline_list",
+  "arguments": { "category": "coding_style" }
+}`,
+                guideline_search: `{
+  "name": "guideline_search",
+  "arguments": { "query": "naming" }
+}`,
+                guideline_get: `{
+  "name": "guideline_get",
+  "arguments": { "id": 1 }
+}`,
+                guideline_update: `{
+  "name": "guideline_update",
+  "arguments": { "id": 1, "priority": 20 }
+}`,
+                guideline_delete: `{
+  "name": "guideline_delete",
+  "arguments": { "id": 1 }
+}`,
+
+                // Bookmark
+                bookmark_create: `{
+  "name": "bookmark_create",
+  "arguments": {
+    "url": "c:\\\\docs\\\\file.pdf",
+    "title": "Reference doc",
+    "excerpt": "Key quote from doc",
+    "note": "Why this is useful",
+    "doc_type": "pdf",
+    "tags": ["reference"]
+  }
+}`,
+                bookmark_search: `{
+  "name": "bookmark_search",
+  "arguments": { "query": "search text" }
+}`,
+                bookmark_list: `{
+  "name": "bookmark_list",
+  "arguments": {}
+}`,
+                bookmark_delete: `{
+  "name": "bookmark_delete",
+  "arguments": { "id": 1 }
+}`,
+
+                // Metadata
+                metadata_set: `{
+  "name": "metadata_set",
+  "arguments": { "key": "version", "value": "1.0.0" }
+}`,
+                metadata_get: `{
+  "name": "metadata_get",
+  "arguments": { "key": "version" }
+}`,
+                metadata_list: `{
+  "name": "metadata_list",
+  "arguments": {}
+}`,
+                metadata_delete: `{
+  "name": "metadata_delete",
+  "arguments": { "key": "version" }
+}`,
+
+                // Filetree
+                filetree_annotate: `{
+  "name": "filetree_annotate",
+  "arguments": {
+    "path": "src/main.go",
+    "note": "Entry point",
+    "is_dir": false
+  }
+}`,
+                filetree_get: `{
+  "name": "filetree_get",
+  "arguments": {}
+}`,
+                filetree_delete: `{
+  "name": "filetree_delete",
+  "arguments": { "path": "src/main.go" }
+}`,
+
+                // Project
+                project_create: `{
+  "name": "project_create",
+  "arguments": {
+    "slug": "my-project",
+    "name": "My Project",
+    "root_path": "c:\\\\code\\\\project"
+  }
+}`,
+                project_list: `{
+  "name": "project_list",
+  "arguments": {}
+}`,
+                project_set_default: `{
+  "name": "project_set_default",
+  "arguments": { "slug": "my-project" }
+}`
+            };
+
+            return examples[name] || `{
+  "name": "${name}",
+  "arguments": {}
+}`;
+        }
+
+        // Create form modal
+        function showCreateForm() {
+            const type = currentDataType;
+            const title = {
+                memories: 'New Memory',
+                tasks: 'New Task',
+                guidelines: 'New Guideline',
+                bookmarks: 'New Bookmark'
+            }[type] || 'New Item';
+
+            document.getElementById('create-modal-title').textContent = title;
+            document.getElementById('create-form-body').innerHTML = getFormFields(type);
+            document.getElementById('create-modal').classList.add('show');
+        }
+
+        function closeCreateModal(event) {
+            if (!event || event.target === document.getElementById('create-modal')) {
+                document.getElementById('create-modal').classList.remove('show');
+            }
+        }
+
+        function getFormFields(type) {
+            const forms = {
+                memories: `
+                    <div class="form-group">
+                        <label class="form-label">Content</label>
+                        <textarea class="form-textarea" id="form-content" placeholder="What to remember..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Keywords (comma separated)</label>
+                        <input class="form-input" id="form-keywords" placeholder="tag1, tag2, tag3">
+                    </div>
+                    <button class="submit-btn" onclick="submitForm('memories')">💭 Create Memory</button>
+                `,
+                tasks: `
+                    <div class="form-group">
+                        <label class="form-label">Title</label>
+                        <input class="form-input" id="form-title" placeholder="Task title">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-textarea" id="form-description" placeholder="Task description..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Priority</label>
+                        <input class="form-input" type="number" id="form-priority" value="0">
+                    </div>
+                    <button class="submit-btn" onclick="submitForm('tasks')">✅ Create Task</button>
+                `,
+                guidelines: `
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <input class="form-input" id="form-category" placeholder="e.g. coding_style, architecture">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Title</label>
+                        <input class="form-input" id="form-title" placeholder="Guideline title">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Content (Markdown)</label>
+                        <textarea class="form-textarea" id="form-content" placeholder="## Guidelines..." style="min-height: 150px"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tags (comma separated)</label>
+                        <input class="form-input" id="form-tags" placeholder="odin, style, naming">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Priority</label>
+                        <input class="form-input" type="number" id="form-priority" value="0">
+                    </div>
+                    <button class="submit-btn" onclick="submitForm('guidelines')">📖 Create Guideline</button>
+                `,
+                bookmarks: `
+                    <div class="form-group">
+                        <label class="form-label">URL / File Path</label>
+                        <input class="form-input" id="form-url" placeholder="c:\\docs\\file.pdf or https://...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Title</label>
+                        <input class="form-input" id="form-title" placeholder="Reference title">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Excerpt</label>
+                        <textarea class="form-textarea" id="form-excerpt" placeholder="Key quote from the document..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Note</label>
+                        <input class="form-input" id="form-note" placeholder="Why this is useful">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Document Type</label>
+                        <input class="form-input" id="form-doctype" placeholder="pdf, image, url, markdown">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tags (comma separated)</label>
+                        <input class="form-input" id="form-tags" placeholder="reference, api, docs">
+                    </div>
+                    <button class="submit-btn" onclick="submitForm('bookmarks')">🔖 Create Bookmark</button>
+                `
+            };
+            return forms[type] || '<p>Cannot create items of this type</p>';
+        }
+
+        async function submitForm(type) {
+            let data = {};
+
+            if (type === 'memories') {
+                data = {
+                    content: document.getElementById('form-content').value,
+                    keywords: document.getElementById('form-keywords').value.split(',').map(s => s.trim()).filter(Boolean)
+                };
+            } else if (type === 'tasks') {
+                data = {
+                    title: document.getElementById('form-title').value,
+                    description: document.getElementById('form-description').value,
+                    priority: parseInt(document.getElementById('form-priority').value) || 0
+                };
+            } else if (type === 'guidelines') {
+                data = {
+                    category: document.getElementById('form-category').value,
+                    title: document.getElementById('form-title').value,
+                    content: document.getElementById('form-content').value,
+                    tags: document.getElementById('form-tags').value.split(',').map(s => s.trim()).filter(Boolean),
+                    priority: parseInt(document.getElementById('form-priority').value) || 0
+                };
+            } else if (type === 'bookmarks') {
+                data = {
+                    url: document.getElementById('form-url').value,
+                    title: document.getElementById('form-title').value,
+                    excerpt: document.getElementById('form-excerpt').value,
+                    note: document.getElementById('form-note').value,
+                    doc_type: document.getElementById('form-doctype').value,
+                    tags: document.getElementById('form-tags').value.split(',').map(s => s.trim()).filter(Boolean)
+                };
+            }
+
+            try {
+                const response = await fetch(`/api/${type}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+
+                if (result.error) {
+                    showToast('Error: ' + result.error, 'error');
+                } else {
+                    showToast('Created successfully!', 'success');
+                    closeCreateModal();
+                    loadData(type);
+                }
+            } catch (err) {
+                showToast('Failed to create', 'error');
+            }
+        }
+
+        async function deleteItem(type, id) {
+            if (!confirm('Delete this item?')) return;
+
+            try {
+                await fetch(`/api/${type}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+                showToast('Deleted', 'success');
+                loadData(type);
+            } catch (err) {
+                showToast('Failed to delete', 'error');
+            }
+        }
+    </script>
+</body>
+
+</html>
