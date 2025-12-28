@@ -169,6 +169,44 @@ All data is stored in a single SQLite database at:
 }
 ```
 
+## LLM Integration
+
+To have AI assistants automatically use mcp-memories in your projects, add a workflow or rules file.
+
+### For agents that support `.agent/workflows/`
+
+Create `.agent/workflows/memories.md` in your project:
+
+```markdown
+---
+description: how to use project memory and context
+---
+
+## Memory Management
+
+Always use the `mcp-memories` MCP server to maintain context across sessions:
+
+### At Session Start
+1. Run `project_list` to see available projects
+2. Run `project_set_default` with the current project slug
+3. Run `memory_search` to check for relevant prior context
+4. Run `guideline_list` to review project conventions
+5. Run `task_list` with status "in_progress" to see ongoing work
+
+### During Work
+- Use `memory_store` to save important decisions, discoveries, or context
+- Use `filetree_annotate` to document what files/directories are for
+- Use `task_create` and `task_update` to track work items
+- Use `guideline_create` to document patterns and conventions
+
+### Keywords for Memories
+Use consistent keywords like: architecture, bug, decision, todo, pattern, config
+```
+
+### For Claude/Cursor/Windsurf
+
+Create `CLAUDE.md`, `.cursorrules`, or `.windsurfrules` in your project root with similar instructions.
+
 ## License
 
 MIT
